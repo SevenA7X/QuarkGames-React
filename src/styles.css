@@ -1,26 +1,17 @@
-/* Configura el contenedor raíz para ocupar el 100% del alto y empujar el footer abajo */
-#root {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background-color: #f4f6f9;
-}
+/*Centra el contenido en la pantalla y limita su ancho máximo a 1100 píxeles.*/
+body { margin: 0; font-family: system-ui, sans-serif; }
+main { max-width: 1100px; margin: auto; padding: 2rem; }
+a { color: #165cbd; }
 
-/* Contenedor principal centrado con espacio interno */
-main {
-  flex: 1;
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem 1rem;
-}
+/*Aplica un fondo de color azul oscuro (#15294b), texto claro y organiza la navegación de manera flexible*/
+.cabecera { background: #15294b; padding: 1rem; }
+.cabecera nav { display: flex; gap: 1.5rem; }
+.cabecera a { color: white; }
 
-/* Efecto de elevación suave al pasar el mouse sobre las tarjetas de videojuegos */
-.card-hover {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
+footer { background: #15294b; color: white; padding: 1rem; }
+/*Utiliza CSS Grid para crear una cuadrícula adaptable que ajusta automáticamente las columnas según el espacio disponible en la pantalla mediante auto-fit y minmax*/
+.grilla { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1rem; }
 
-.card-hover:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
-}
+/*Da formato a elementos individuales con bordes y espaciado, configurando las imágenes con una altura fija y la propiedad object-fit: cover para preservar su proporción visual.*/
+.tarjeta { border: 1px solid #ddd; padding: 1rem; }
+.tarjeta img { width: 100%; height: 160px; object-fit: cover; }
