@@ -12,10 +12,10 @@ import { useTienda } from './context/TiendaContext.jsx';
 
 // VERSIÓN TRANSITORIA: App ya no guarda estado propio. El carrito y el catálogo
 // vienen de TiendaContext y la sesión de AuthContext (a través de RutaAdmin).
-// Admin todavía recibe props; cuando lo reescribas con useTienda() y crees
-// Layout.jsx, esta versión se reemplaza por la final (Layout como ruta padre).
+// Cuando crees Layout.jsx (Fase 3), esta versión se reemplaza por la final,
+// con Layout como ruta padre.
 export default function App() {
-  const { estado, dispatch } = useTienda();
+  const { estado } = useTienda();
 
   return (
     <>
@@ -31,20 +31,7 @@ export default function App() {
 
           {/* RutaAdmin no tiene path: protege a todas sus rutas hijas */}
           <Route element={<RutaAdmin />}>
-            <Route
-              path="/admin"
-              element={
-                <Admin
-                  productos={estado.productos}
-                  alGuardar={(producto) =>
-                    dispatch({ type: 'GUARDAR_PRODUCTO', payload: producto })
-                  }
-                  alEliminar={(id) =>
-                    dispatch({ type: 'ELIMINAR_PRODUCTO', payload: id })
-                  }
-                />
-              }
-            />
+            <Route path="/admin" element={<Admin />} />
           </Route>
 
           <Route path="*" element={<h1>Página no encontrada</h1>} />
