@@ -9,11 +9,15 @@ import { BrowserRouter } from 'react-router';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './styles.css';
 import App from './App.jsx';
+import { TiendaProvider } from './context/TiendaContext.jsx'; // 1. Importar el Provider
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
-      <App />
+      {/* 2. Envolver <App /> con el Provider */}
+      <TiendaProvider>
+        <App />
+      </TiendaProvider>
     </BrowserRouter>
   </React.StrictMode>,
 );
