@@ -47,3 +47,17 @@ describe('validarProducto', () => {
     expect(errores.stock).toBeDefined();
   });
 });
+
+describe('validarContacto', () => {
+    it('debe retornar error si el correo electrónico tiene un formato inválido', () => {
+      const { validarContacto } = require('./validaciones.js');
+      const camposInvalidos = {
+        email: 'correo-sin-arroba.com',
+        asunto: 'Consulta válida',
+        mensaje: 'Este es un mensaje de prueba con la longitud correcta.'
+      };
+      
+      const errores = validarContacto(camposInvalidos);
+      expect(errores.email).toBe('Ingresa un correo electrónico válido.');
+    });
+  });
