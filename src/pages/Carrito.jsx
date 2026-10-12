@@ -1,34 +1,112 @@
-import { Link } from 'react-router';
-import { precioCLP } from '../utils/formatos.js';
 
-export default function Carrito({ productos, carrito, quitar, vaciar }) {
-  const detalle = carrito.map(item => ({
-    ...productos.find(p => p.id === item.id),
-    cantidad: item.cantidad
-  }));
+import { useState } from 'react';
+import { Container, Row, Col, Card, Button, ListGroup } from 'react-bootstrap';
+import { Link } from 'react-router'; // Recordar que react-router 7 no usa react-router-dom
+import { useTienda } from '../context/TiendaContext.jsx';
+import { precioCLP } from '../utils/formatos.js';
+import ConfirmarModal from '../components/ConfirmarModal.jsx';
+
+export default function Carrito() {
+  // 1. Extraemos el estado global y el despachador
+  const { estado, dispatch } = useTienda();
+  const { productos, carrito } = estado;
+  
+  // 2. Estado local para controlar si el modal de confirmación se muestra o no
+  const [mostrarModal, setMostrarModal] = useState(false);
+
+  // 3. Procesamos los datos: cruzamos el carrito con el catálogo para obtener los precios
+  const detalle = carrito.map((item) => {
+    const prod = productos.find((p) => p.id === item.id);
+    return { ...prod, cantidad: item.cantidad };
+  });
+
+  // 4. Calculamos el total matemático (acumulador)
   const total = detalle.reduce((suma, p) => suma + p.precio * p.cantidad, 0);
 
+  // Funciones que se comunican con nuestro Reducer
+  function quitar(id) {
+    dispatch({ type: 'QUITAR_DEL_CARRITO', payload: id });
+  }
+
+  function vaciar() {
+    dispatch({ type: 'VACIAR_CARRITO' });
+    setMostrarModal(false); // Cierra el modal tras vaciar
+  }
+
   return (
-    <section>
-      <h1>Mi carrito</h1>
-      {!detalle.length && <p>Tu carrito está vacío.</p>}
-      {detalle.map(p => (
-        <p key={p.id}>
-          {p.nombre}: {p.cantidad} unidades{' '}
-          <button type="button" onClick={() => quitar(p.id)}>
-            Eliminar {p.nombre}
-          </button>
-        </p>
-      ))}
-      <p>Total sin envío: {precioCLP(total)}</p>
-      {detalle.length > 0 && (
-        <p>
-          <button type="button" onClick={vaciar}>
-            Vaciar carrito
-          </button>
-        </p>
+    <Container className="py-4">
+      <h1 className="mb-4">Mi Carrito</h1>
+      
+      {detalle.length === 0 ? (
+        <Card className="text-center p-5 bg-light">
+          <Card.Body>
+            <h3 className="text-muted mb-3">Tu carrito está vacío</h3>
+            <Button as={Link} to="/productos" variant="primary">
+              Explorar productos
+            </Button>
+          </Card.Body>
+        </Card>
+      ) : (
+        <Row className="g-4">
+          {/* Columna Izquierda: Lista de productos en el carrito */}
+          <Col xs={12} lg={8}>
+            <ListGroup>
+              {detalle.map((p) => (
+                <ListGroup.Item key={p.id} className="d-flex justify-content-between align-items-center p-3">
+                  <div className="d-flex align-items-center gap-3">
+                    <img 
+                      src={p.imagen} 
+                      alt={p.nombre} 
+                      style={{ width: '60px', height: '60px', objectFit: 'cover' }}
+                      className="rounded" 
+                    />
+                    <div>
+                      <h5 className="mb-0">{p.nombre}</h5>
+                      <span className="text-muted">{precioCLP(p.precio)} x {p.cantidad}</span>
+                    </div>
+                  </div>
+                  <Button variant="outline-danger" size="sm" onClick={() => quitar(p.id)}>
+                    Eliminar
+                  </Button>
+                </ListGroup.Item>
+              ))}
+            </ListGroup>
+          </Col>
+          
+          {/* Columna Derecha: Panel de resumen (Total y botones de acción) */}
+          <Col xs={12} lg={4}>
+            <Card className="bg-light">
+              <Card.Body>
+                <Card.Title>Resumen de compra</Card.Title>
+                <hr />
+                <div className="d-flex justify-content-between mb-3">
+                  <strong>Total sin envío:</strong>
+                  <span className="fs-5">{precioCLP(total)}</span>
+                </div>
+                
+                <div className="d-grid gap-2">
+                  <Button variant="success" size="lg">
+                    Proceder al pago
+                  </Button>
+                  {/* Este botón abre el modal de confirmación, NO vacía el carrito directamente */}
+                  <Button variant="outline-danger" onClick={() => setMostrarModal(true)}>
+                    Vaciar carrito
+                  </Button>
+                </div>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
       )}
-      <Link to="/productos">Continuar comprando</Link>
-    </section>
+
+      {/* Componente Modal que creamos antes. Se muestra solo si mostrarModal es true */}
+      <ConfirmarModal
+        show={mostrarModal}
+        onHide={() => setMostrarModal(false)}
+        titulo="Vaciar Carrito"
+        mensaje="¿Estás seguro de que deseas eliminar todos los productos del carrito? Esta acción no se puede deshacer."
+        onConfirmar={vaciar}
+      />
+    </Container>
   );
 }
