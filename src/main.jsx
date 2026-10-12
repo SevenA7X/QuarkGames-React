@@ -10,13 +10,16 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './styles.css';
 import App from './App.jsx';
 import { TiendaProvider } from './context/TiendaContext.jsx'; // 1. Importar el Provider
+import { AuthProvider } from './context/AuthContext.jsx';
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
       {/* 2. Envolver <App /> con el Provider */}
       <TiendaProvider>
-        <App />
+        <AuthProvider>
+      <App />
+    </AuthProvider>
       </TiendaProvider>
     </BrowserRouter>
   </React.StrictMode>,
