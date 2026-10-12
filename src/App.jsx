@@ -12,8 +12,6 @@ import { useTienda } from './context/TiendaContext.jsx';
 
 // VERSIÓN TRANSITORIA: App ya no guarda estado propio. El carrito y el catálogo
 // vienen de TiendaContext y la sesión de AuthContext (a través de RutaAdmin).
-// Cuando crees Layout.jsx (Fase 3), esta versión se reemplaza por la final,
-// con Layout como ruta padre.
 export default function App() {
   const { estado } = useTienda();
 
