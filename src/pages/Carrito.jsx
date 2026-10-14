@@ -14,6 +14,9 @@ export default function Carrito() {
   // 2. Estado local para controlar si el modal de confirmación se muestra o no
   const [mostrarModal, setMostrarModal] = useState(false);
 
+  // Estado para el modal de compra
+  const [mostrarModalCompra, setMostrarModalCompra] = useState(false);
+
   // 3. Procesamos los datos: cruzamos el carrito con el catálogo para obtener los precios
   const detalle = carrito.map((item) => {
     const prod = productos.find((p) => p.id === item.id);
@@ -34,8 +37,14 @@ export default function Carrito() {
   }
 
   function comprar() {
-    alert("¡Compra realizada con éxito");
+    alert("¡Compra realizada con éxito!");
     dispatch({ type: 'VACIAR_CARRITO' });
+  }
+
+  // Función que se ejecuta al confirmar la compra en el modal
+  function confirmarCompra() {
+    dispatch({ type: 'VACIAR_CARRITO' });
+    setMostrarModalCompra(false); // Cierra el modal de compra
   }
 
   return (
@@ -90,10 +99,10 @@ export default function Carrito() {
                 </div>
                 
                 <div className="d-grid gap-2">
-                  <Button variant="success" size="lg" onClick={comprar}>
-                  Proceder al pago
+                  {/* Este botón ahora abre el modal de compra */}
+                  <Button variant="success" size="lg" onClick={() => setMostrarModalCompra(true)}>
+                    Proceder al pago
                   </Button>
-                  {/* Este botón abre el modal de confirmación, NO vacía el carrito directamente */}
                   <Button variant="outline-danger" onClick={() => setMostrarModal(true)}>
                     Vaciar carrito
                   </Button>
@@ -111,6 +120,15 @@ export default function Carrito() {
         titulo="Vaciar Carrito"
         mensaje="¿Estás seguro de que deseas eliminar todos los productos del carrito? Esta acción no se puede deshacer."
         onConfirmar={vaciar}
+      />
+
+      {/*Modal para CONFIRMAR LA COMPRA */}
+      <ConfirmarModal
+        show={mostrarModalCompra}
+        onHide={() => setMostrarModalCompra(false)}
+        titulo="Confirmar Compra"
+        mensaje="¿Estás seguro de que deseas finalizar tu compra? Se procesarán los productos de tu carrito."
+        onConfirmar={confirmarCompra}
       />
     </Container>
   );
