@@ -33,6 +33,11 @@ export default function Carrito() {
     setMostrarModal(false); // Cierra el modal tras vaciar
   }
 
+  function comprar() {
+    alert("¡Compra realizada con éxito");
+    dispatch({ type: 'VACIAR_CARRITO' });
+  }
+
   return (
     <Container className="py-4">
       <h1 className="mb-4">Mi Carrito</h1>
@@ -85,8 +90,8 @@ export default function Carrito() {
                 </div>
                 
                 <div className="d-grid gap-2">
-                  <Button variant="success" size="lg">
-                    Proceder al pago
+                  <Button variant="success" size="lg" onClick={comprar}>
+                  Proceder al pago
                   </Button>
                   {/* Este botón abre el modal de confirmación, NO vacía el carrito directamente */}
                   <Button variant="outline-danger" onClick={() => setMostrarModal(true)}>
