@@ -6,9 +6,6 @@ import App from './App.jsx';
 import { TiendaProvider } from './context/TiendaContext.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 
-// App necesita un router y los dos contextos, porque Header, Layout y las páginas
-// usan useTienda() y useAuth(). BrowserRouter vive en main.jsx, que no se monta en las pruebas,
-// así que usamos MemoryRouter e indicamos en qué ruta parte la prueba.
 function renderizarApp(ruta = '/') {
   return render(
     <MemoryRouter initialEntries={[ruta]}>

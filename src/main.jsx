@@ -18,8 +18,8 @@ createRoot(document.getElementById('root')).render(
       {/* 2. Envolver <App /> con el Provider */}
       <TiendaProvider>
         <AuthProvider>
-      <App />
-    </AuthProvider>
+          <App />
+        </AuthProvider>
       </TiendaProvider>
     </BrowserRouter>
   </React.StrictMode>,

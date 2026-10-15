@@ -1,14 +1,15 @@
-/*Centra el contenido en la pantalla y limita su ancho máximo a 1100 píxeles.*/
+/* Estructura: main ocupa el espacio libre (flex: 1) para que el footer quede al final de la pantalla */
 body { margin: 0; font-family: system-ui, sans-serif; }
-main { max-width: 1100px; margin: auto; padding: 2rem; }
+main { flex: 1 0 auto; width: 100%; max-width: 1100px; margin: 0 auto; padding: 2rem; }
 a { color: #165cbd; }
 
-/*Aplica un fondo de color azul oscuro (#15294b), texto claro y organiza la navegación de manera flexible*/
-.cabecera { background: #15294b; padding: 1rem; }
-.cabecera nav { display: flex; gap: 1.5rem; }
-.cabecera a { color: white; }
+/* Barra de navegación del diseño anterior: fondo gris azulado oscuro y letra grande */
+.navbar-custom-color { background-color: #292935; font-size: 1.5rem; }
+.navbar-custom-color .navbar-brand { font-family: Arial, sans-serif; }
 
-footer { background: #15294b; color: white; padding: 1rem; }
+/* Insignia roja del carrito, un poco más pequeña y levantada respecto al texto */
+.contador-carrito { font-size: 0.75em; transform: translateY(-2px); }
+
 /*Utiliza CSS Grid para crear una cuadrícula adaptable que ajusta automáticamente las columnas según el espacio disponible en la pantalla mediante auto-fit y minmax*/
 .grilla { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1rem; }
 
