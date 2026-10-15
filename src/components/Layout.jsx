@@ -11,7 +11,9 @@ export default function Layout() {
   const { estado } = useTienda();
 
   return (
-    <>
+    // d-flex flex-column min-vh-100: la página ocupa al menos toda la pantalla y el
+    // contenido (main) crece para empujar el footer siempre hacia abajo.
+    <div className="d-flex flex-column min-vh-100">
       <Header />
       <main>
         {/* role="status" hace que los lectores de pantalla anuncien el mensaje cuando cambia */}
@@ -20,6 +22,6 @@ export default function Layout() {
         <Outlet />
       </main>
       <Footer />
-    </>
+    </div>
   );
 }

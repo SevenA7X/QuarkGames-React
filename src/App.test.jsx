@@ -6,6 +6,9 @@ import App from './App.jsx';
 import { TiendaProvider } from './context/TiendaContext.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 
+// App necesita un router y los dos contextos, porque Header, Layout y las páginas
+// usan useTienda() y useAuth(). BrowserRouter vive en main.jsx, que no se monta en las pruebas,
+// así que usamos MemoryRouter e indicamos en qué ruta parte la prueba.
 function renderizarApp(ruta = '/') {
   return render(
     <MemoryRouter initialEntries={[ruta]}>
@@ -25,13 +28,13 @@ describe('App: integración de rutas, sesión y carrito', () => {
     renderizarApp('/');
 
     // 2 Actuar
-    await user.click(screen.getByRole('link', { name: 'Productos' }));
+    await user.click(screen.getByRole('link', { name: 'Juegos' }));
 
     // 3 Comprobar
     expect(
       await screen.findByRole('heading', { name: 'Catálogo de Productos' }),
     ).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Productos' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Juegos' })).toHaveAttribute(
       'aria-current',
       'page',
     );
@@ -71,14 +74,14 @@ describe('App: integración de rutas, sesión y carrito', () => {
     // 1 Preparar
     const user = userEvent.setup();
     renderizarApp('/productos');
-    expect(screen.getByRole('link', { name: 'Carrito (0)' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Carrito' })).toBeInTheDocument();
 
     // 2 Actuar: agregamos el primer producto disponible
     const botones = await screen.findAllByRole('button', { name: 'Agregar al carrito' });
     await user.click(botones[0]);
 
     // 3 Comprobar: el Header y el mensaje leen el mismo estado global
-    expect(screen.getByRole('link', { name: 'Carrito (1)' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Carrito 1' })).toBeInTheDocument();
     expect(screen.getByRole('status')).toHaveTextContent('Producto agregado.');
   });
 
@@ -90,7 +93,7 @@ describe('App: integración de rutas, sesión y carrito', () => {
     expect(
       await screen.findByRole('heading', { name: 'Página no encontrada' }),
     ).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Productos' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Juegos' })).toBeInTheDocument();
   });
 
   it('muestra un error por campo al enviar Contacto vacío', async () => {
