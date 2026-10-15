@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router';
+import { Container } from 'react-bootstrap';
 import Header from './Header.jsx';
 import Footer from './Footer.jsx';
 import { useTienda } from '../context/TiendaContext.jsx';
@@ -17,8 +18,13 @@ export default function Layout() {
       <Header />
       <main>
         {/* role="status" hace que los lectores de pantalla anuncien el mensaje cuando cambia */}
-        <p role="status">{estado.mensaje}</p>
-        {/* <Outlet /> es el lugar donde React Router dibuja la página hija que corresponde a la URL */}
+        <Container>
+          <p role="status" className="mb-0">
+            {estado.mensaje}
+          </p>
+        </Container>
+        {/* <Outlet /> es el lugar donde React Router dibuja la página hija que corresponde a la URL.
+            Cada página define su propio ancho: unas usan Container y la portada ocupa todo el ancho. */}
         <Outlet />
       </main>
       <Footer />

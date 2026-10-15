@@ -1,6 +1,7 @@
-/* Estructura: main ocupa el espacio libre (flex: 1) para que el footer quede al final de la pantalla */
+/* Estructura: main ocupa el espacio libre (flex: 1) para que el footer quede al final de la pantalla.
+   Cada página define su propio ancho (Container de Bootstrap, o todo el ancho en la portada). */
 body { margin: 0; font-family: system-ui, sans-serif; }
-main { flex: 1 0 auto; width: 100%; max-width: 1100px; margin: 0 auto; padding: 2rem; }
+main { flex: 1 0 auto; width: 100%; }
 a { color: #165cbd; }
 
 /* Barra de navegación del diseño anterior: fondo gris azulado oscuro y letra grande */
@@ -9,6 +10,16 @@ a { color: #165cbd; }
 
 /* Insignia roja del carrito, un poco más pequeña y levantada respecto al texto */
 .contador-carrito { font-size: 0.75em; transform: translateY(-2px); }
+
+/* Inicio: banner superior */
+.hero-banner { background-color: #3F3D50; color: #ffffff; text-align: center; padding: 35px 20px; }
+.hero-banner h1 { font-size: 2.2rem; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 8px; text-transform: uppercase; }
+.hero-banner p { color: #e0e0e0; font-size: 1rem; margin-bottom: 0; }
+
+/* Inicio: bloque de bienvenida centrado */
+.main-content { background-color: #ffffff; max-width: 900px; margin: 0 auto; padding: 40px 20px; text-align: center; }
+.main-content h2 { font-size: 2rem; font-weight: 700; color: #111111; margin-bottom: 20px; }
+.description { font-size: 1rem; line-height: 1.5; color: #111111; max-width: 700px; margin: 0 auto; }
 
 /*Utiliza CSS Grid para crear una cuadrícula adaptable que ajusta automáticamente las columnas según el espacio disponible en la pantalla mediante auto-fit y minmax*/
 .grilla { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1rem; }

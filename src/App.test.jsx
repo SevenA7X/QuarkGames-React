@@ -115,4 +115,38 @@ describe('App: integración de rutas, sesión y carrito', () => {
       screen.getByText('El mensaje debe tener entre 10 y 500 caracteres válidos.'),
     ).toBeInTheDocument();
   });
+
+  it('muestra la portada con tres juegos destacados', async () => {
+    // 1 Preparar y 2 Actuar: la prueba parte en la portada
+    renderizarApp('/');
+
+    // 3 Comprobar: banner, bienvenida y las tres tarjetas del catálogo inicial
+    expect(
+      await screen.findByRole('heading', { name: 'TU PORTAL DE VIDEOJUEGOS DIGITALES' }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Lo mejor de lo mejor' })).toBeInTheDocument();
+    expect(screen.getAllByRole('link', { name: /^Ver / })).toHaveLength(3);
+  });
+
+  it('descuenta el stock visible al confirmar la compra', async () => {
+    // 1 Preparar: Elden Ring, el primer juego del catálogo, parte con 5 unidades
+    const user = userEvent.setup();
+    renderizarApp('/productos');
+    expect(await screen.findByText('Stock: 5')).toBeInTheDocument();
+
+    // 2 Actuar: agregamos 2 unidades, vamos al carrito y confirmamos el pago
+    const botones = await screen.findAllByRole('button', { name: 'Agregar al carrito' });
+    await user.click(botones[0]);
+    await user.click(botones[0]);
+    await user.click(screen.getByRole('link', { name: 'Carrito 2' }));
+    await user.click(screen.getByRole('button', { name: 'Proceder al pago' }));
+    await user.click(await screen.findByRole('button', { name: 'Confirmar' }));
+
+    // 3 Comprobar: el carrito queda vacío y, al volver al catálogo, el stock bajó de 5 a 3
+    expect(
+      await screen.findByRole('heading', { name: 'Tu carrito está vacío' }),
+    ).toBeInTheDocument();
+    await user.click(await screen.findByRole('link', { name: 'Juegos' }));
+    expect(await screen.findByText('Stock: 3')).toBeInTheDocument();
+  });
 });
