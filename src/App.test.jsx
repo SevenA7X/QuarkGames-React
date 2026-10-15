@@ -164,4 +164,39 @@ describe('App: integración de rutas, sesión y carrito', () => {
     // 3 Comprobar
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
+
+  it('muestra un error por campo al enviar el login vacío', async () => {
+    // 1 Preparar
+    const user = userEvent.setup();
+    renderizarApp('/login');
+
+    // 2 Actuar: enviamos el formulario sin escribir nada
+    await user.click(screen.getByRole('button', { name: 'Ingresar' }));
+
+    // 3 Comprobar: cada campo muestra su propio error y no se entra al panel
+    expect(await screen.findByText('Ingresa tu usuario.')).toBeInTheDocument();
+    expect(screen.getByText('Ingresa tu contraseña.')).toBeInTheDocument();
+    expect(
+      screen.queryByRole('heading', { name: 'Administración de productos' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('rechaza las credenciales incorrectas con una alerta', async () => {
+    // 1 Preparar
+    const user = userEvent.setup();
+    renderizarApp('/login');
+
+    // 2 Actuar: usuario correcto, contraseña incorrecta
+    await user.type(screen.getByLabelText(/usuario/i), 'admin');
+    await user.type(screen.getByLabelText(/contraseña/i), '0000');
+    await user.click(screen.getByRole('button', { name: 'Ingresar' }));
+
+    // 3 Comprobar
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Usuario o contraseña incorrectos.',
+    );
+    expect(
+      screen.queryByRole('heading', { name: 'Administración de productos' }),
+    ).not.toBeInTheDocument();
+  });
 });

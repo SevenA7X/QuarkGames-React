@@ -91,3 +91,14 @@ export function validarContacto(campos) {
       
   return errores;
 }
+
+// Revisa que el formulario de inicio de sesión no tenga campos vacíos.
+// No comprueba si las credenciales son correctas: eso lo decide AuthContext al llamar a login().
+export function validarLogin(campos) {
+  const errores = {};
+
+  if (campos.usuario.trim() === '') errores.usuario = 'Ingresa tu usuario.';
+  if (campos.contrasena === '') errores.contrasena = 'Ingresa tu contraseña.';
+
+  return errores;
+}

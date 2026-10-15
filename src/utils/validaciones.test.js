@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { validarProducto } from './validaciones.js';
+import { validarProducto, validarLogin } from './validaciones.js';
 
 describe('validarProducto', () => {
   const productosExistentes = [
@@ -61,3 +61,19 @@ describe('validarContacto', () => {
       expect(errores.email).toBe('Ingresa un correo electrónico válido.');
     });
   });
+
+describe('validarLogin', () => {
+  it('debe retornar un error por cada campo vacío', () => {
+    // El usuario solo con espacios también cuenta como vacío
+    const errores = validarLogin({ usuario: '   ', contrasena: '' });
+
+    expect(errores.usuario).toBe('Ingresa tu usuario.');
+    expect(errores.contrasena).toBe('Ingresa tu contraseña.');
+  });
+
+  it('debe retornar un objeto vacío si ambos campos tienen datos', () => {
+    const errores = validarLogin({ usuario: 'admin', contrasena: '1234' });
+
+    expect(Object.keys(errores)).toHaveLength(0);
+  });
+});
