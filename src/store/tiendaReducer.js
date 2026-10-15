@@ -39,6 +39,39 @@ export function tiendaReducer(estado, accion) {
       return { ...estado, carrito: [] };
     }
 
+    case 'COMPRAR': {
+      // Regla de negocio 1: no se puede comprar con el carrito vacío
+      if (estado.carrito.length === 0) {
+        return { ...estado, mensaje: 'El carrito está vacío.' };
+      }
+
+      // Regla de negocio 2: TODOS los productos del carrito deben tener stock suficiente.
+      // .some() devuelve true si al menos un producto no cumple la condición.
+      const hayProblemaDeStock = estado.carrito.some((item) => {
+        const producto = estado.productos.find((p) => p.id === item.id);
+        return !producto || item.cantidad > producto.stock;
+      });
+      if (hayProblemaDeStock) {
+        // No se modifica nada: el catálogo y el carrito quedan como estaban
+        return { ...estado, mensaje: 'Stock insuficiente para completar la compra.' };
+      }
+
+      // Inmutabilidad: construimos un catálogo NUEVO con .map(). A cada producto se le
+      // resta la cantidad que hay en el carrito (o 0 si no está en él).
+      const productos = estado.productos.map((p) => ({
+        ...p,
+        stock: p.stock - (estado.carrito.find((i) => i.id === p.id)?.cantidad ?? 0),
+      }));
+
+      // La compra termina: stock actualizado y carrito vacío
+      return {
+        ...estado,
+        productos,
+        carrito: [],
+        mensaje: 'Compra simulada completada. Stock actualizado.',
+      };
+    }
+
     case 'GUARDAR_PRODUCTO': {
       const prod = accion.payload;
       const existe = estado.productos.some((p) => p.id === prod.id);

@@ -36,14 +36,10 @@ export default function Carrito() {
     setMostrarModal(false); // Cierra el modal tras vaciar
   }
 
-  function comprar() {
-    alert("¡Compra realizada con éxito!");
-    dispatch({ type: 'VACIAR_CARRITO' });
-  }
-
-  // Función que se ejecuta al confirmar la compra en el modal
+  // Función que se ejecuta al confirmar la compra en el modal.
+  // COMPRAR descuenta del stock las unidades del carrito y lo vacía (ver tiendaReducer.js).
   function confirmarCompra() {
-    dispatch({ type: 'VACIAR_CARRITO' });
+    dispatch({ type: 'COMPRAR' });
     setMostrarModalCompra(false); // Cierra el modal de compra
   }
 

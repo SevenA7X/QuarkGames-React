@@ -41,6 +41,8 @@ export default function ProductoCard({ producto }) {
         <div className="mb-3">
           {/* Badge de React Bootstrap cambia de color dinámicamente gracias a estadoStock() */}
           <Badge bg={stockInfo.variante}>{stockInfo.texto}</Badge>
+          {/* Cantidad exacta: así se ve cómo baja el stock después de cada compra */}
+          <span className="text-muted small ms-2">Stock: {producto.stock}</span>
         </div>
         
         {/* mt-auto empuja este botón hasta el fondo de la tarjeta para que queden alineados */}

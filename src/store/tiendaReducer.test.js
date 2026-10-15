@@ -40,4 +40,40 @@ describe('tiendaReducer', () => {
 
     expect(nuevoEstado.carrito).toHaveLength(0);
   });
+
+  it('debe descontar el stock y vaciar el carrito al comprar', () => {
+    const estadoCompra = {
+      productos: [{ id: 1, nombre: 'Juego A', stock: 5 }],
+      carrito: [{ id: 1, cantidad: 2 }],
+      mensaje: ''
+    };
+    const nuevoEstado = tiendaReducer(estadoCompra, { type: 'COMPRAR' });
+
+    expect(nuevoEstado.productos[0].stock).toBe(3);
+    expect(nuevoEstado.carrito).toEqual([]);
+    expect(nuevoEstado.mensaje).toBe('Compra simulada completada. Stock actualizado.');
+    // Inmutabilidad: el estado original no se modifica
+    expect(estadoCompra.productos[0].stock).toBe(5);
+  });
+
+  it('debe rechazar la compra si el carrito supera el stock', () => {
+    const estadoExcedido = {
+      productos: [{ id: 1, nombre: 'Juego A', stock: 1 }],
+      carrito: [{ id: 1, cantidad: 2 }],
+      mensaje: ''
+    };
+    const nuevoEstado = tiendaReducer(estadoExcedido, { type: 'COMPRAR' });
+
+    // No cambia nada: se conservan catálogo y carrito, y aparece el aviso de rechazo
+    expect(nuevoEstado.productos[0].stock).toBe(1);
+    expect(nuevoEstado.carrito).toEqual([{ id: 1, cantidad: 2 }]);
+    expect(nuevoEstado.mensaje).toBe('Stock insuficiente para completar la compra.');
+  });
+
+  it('debe rechazar la compra con el carrito vacío', () => {
+    const nuevoEstado = tiendaReducer(estadoInicial, { type: 'COMPRAR' });
+
+    expect(nuevoEstado.productos[0].stock).toBe(5);
+    expect(nuevoEstado.mensaje).toBe('El carrito está vacío.');
+  });
 });
