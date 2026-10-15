@@ -27,3 +27,6 @@ a { color: #165cbd; }
 /*Da formato a elementos individuales con bordes y espaciado, configurando las imágenes con una altura fija y la propiedad object-fit: cover para preservar su proporción visual.*/
 .tarjeta { border: 1px solid #ddd; padding: 1rem; }
 .tarjeta img { width: 100%; height: 160px; object-fit: cover; }
+
+/* Alerta flotante de avisos (producto agregado, compra realizada...): centrada arriba, por encima de todo */
+.alerta-flotante { position: fixed; top: 1rem; left: 50%; transform: translateX(-50%); z-index: 1090; width: min(92vw, 480px); }

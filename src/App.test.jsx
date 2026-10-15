@@ -82,7 +82,7 @@ describe('App: integración de rutas, sesión y carrito', () => {
 
     // 3 Comprobar: el Header y el mensaje leen el mismo estado global
     expect(screen.getByRole('link', { name: 'Carrito 1' })).toBeInTheDocument();
-    expect(screen.getByRole('status')).toHaveTextContent('Producto agregado.');
+    expect(screen.getByRole('alert')).toHaveTextContent('Producto agregado.');
   });
 
   it('muestra la página no encontrada para una ruta desconocida', async () => {
@@ -148,5 +148,20 @@ describe('App: integración de rutas, sesión y carrito', () => {
     ).toBeInTheDocument();
     await user.click(await screen.findByRole('link', { name: 'Juegos' }));
     expect(await screen.findByText('Stock: 3')).toBeInTheDocument();
+  });
+
+  it('permite cerrar la alerta con el botón', async () => {
+    // 1 Preparar: agregamos un juego para que aparezca la alerta de confirmación
+    const user = userEvent.setup();
+    renderizarApp('/productos');
+    const botones = await screen.findAllByRole('button', { name: 'Agregar al carrito' });
+    await user.click(botones[0]);
+    expect(screen.getByRole('alert')).toHaveTextContent('Producto agregado.');
+
+    // 2 Actuar
+    await user.click(screen.getByRole('button', { name: 'Cerrar' }));
+
+    // 3 Comprobar
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 });

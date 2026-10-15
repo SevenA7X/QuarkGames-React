@@ -12,7 +12,7 @@ export function tiendaReducer(estado, accion) {
 
       // Regla de negocio: Validar que el producto exista y haya stock suficiente
       if (!producto || cantidad >= producto.stock) {
-        return { ...estado, mensaje: 'Stock insuficiente.' };
+        return { ...estado, mensaje: 'Stock insuficiente.', tipoMensaje: 'warning' };
       }
 
       // Inmutabilidad: Si el ítem ya existe, creamos un nuevo arreglo map() sumando 1.
@@ -25,7 +25,7 @@ export function tiendaReducer(estado, accion) {
         : [...estado.carrito, { id, cantidad: 1 }];
 
       // Retornamos una copia del estado (...estado) modificando solo carrito y mensaje
-      return { ...estado, carrito: nuevoCarrito, mensaje: 'Producto agregado.' };
+      return { ...estado, carrito: nuevoCarrito, mensaje: 'Producto agregado.', tipoMensaje: 'success' };
     }
 
     case 'QUITAR_DEL_CARRITO': {
@@ -42,7 +42,7 @@ export function tiendaReducer(estado, accion) {
     case 'COMPRAR': {
       // Regla de negocio 1: no se puede comprar con el carrito vacío
       if (estado.carrito.length === 0) {
-        return { ...estado, mensaje: 'El carrito está vacío.' };
+        return { ...estado, mensaje: 'El carrito está vacío.', tipoMensaje: 'warning' };
       }
 
       // Regla de negocio 2: TODOS los productos del carrito deben tener stock suficiente.
@@ -53,7 +53,11 @@ export function tiendaReducer(estado, accion) {
       });
       if (hayProblemaDeStock) {
         // No se modifica nada: el catálogo y el carrito quedan como estaban
-        return { ...estado, mensaje: 'Stock insuficiente para completar la compra.' };
+        return {
+          ...estado,
+          mensaje: 'Stock insuficiente para completar la compra.',
+          tipoMensaje: 'warning',
+        };
       }
 
       // Inmutabilidad: construimos un catálogo NUEVO con .map(). A cada producto se le
@@ -69,6 +73,7 @@ export function tiendaReducer(estado, accion) {
         productos,
         carrito: [],
         mensaje: 'Compra simulada completada. Stock actualizado.',
+        tipoMensaje: 'success',
       };
     }
 

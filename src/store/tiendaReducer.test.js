@@ -52,6 +52,7 @@ describe('tiendaReducer', () => {
     expect(nuevoEstado.productos[0].stock).toBe(3);
     expect(nuevoEstado.carrito).toEqual([]);
     expect(nuevoEstado.mensaje).toBe('Compra simulada completada. Stock actualizado.');
+    expect(nuevoEstado.tipoMensaje).toBe('success');
     // Inmutabilidad: el estado original no se modifica
     expect(estadoCompra.productos[0].stock).toBe(5);
   });
@@ -68,6 +69,7 @@ describe('tiendaReducer', () => {
     expect(nuevoEstado.productos[0].stock).toBe(1);
     expect(nuevoEstado.carrito).toEqual([{ id: 1, cantidad: 2 }]);
     expect(nuevoEstado.mensaje).toBe('Stock insuficiente para completar la compra.');
+    expect(nuevoEstado.tipoMensaje).toBe('warning');
   });
 
   it('debe rechazar la compra con el carrito vacío', () => {
@@ -75,5 +77,6 @@ describe('tiendaReducer', () => {
 
     expect(nuevoEstado.productos[0].stock).toBe(5);
     expect(nuevoEstado.mensaje).toBe('El carrito está vacío.');
+    expect(nuevoEstado.tipoMensaje).toBe('warning');
   });
 });

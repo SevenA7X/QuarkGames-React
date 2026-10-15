@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { Container, Row, Col, Card, Badge, Button } from 'react-bootstrap';
+import { Container, Row, Col, Card, Badge } from 'react-bootstrap';
 import { useTienda } from '../context/TiendaContext.jsx';
 import { precioCLP, normalizar } from '../utils/formatos.js';
 
@@ -68,14 +68,16 @@ export default function Inicio() {
                         </Card.Title>
                         {/* mt-auto empuja precio y botón al fondo para que todas las tarjetas queden alineadas */}
                         <p className="fw-bold fs-5 mt-auto">{precioCLP(p.precio)}</p>
-                        <Button
-                          as={Link}
+                        {/* Es un enlace de navegación, así que usamos Link con las clases de botón de
+                            Bootstrap. Con <Button as={Link}> React Bootstrap le pone role="button" y deja
+                            de ser un enlace para los lectores de pantalla y para las pruebas. */}
+                        <Link
                           to="/productos"
-                          variant={color}
+                          className={`btn btn-${color}`}
                           aria-label={`Ver ${p.nombre}`}
                         >
                           Ver Juego
-                        </Button>
+                        </Link>
                       </Card.Body>
                     </Card>
                   </Col>
