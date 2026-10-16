@@ -1,4 +1,3 @@
-
 // Un "Reducer" es una función pura. Recibe el "estado" actual (productos, carrito)
 // y una "acción" (qué queremos hacer), y retorna un nuevo objeto de estado.
 export function tiendaReducer(estado, accion) {
@@ -26,6 +25,25 @@ export function tiendaReducer(estado, accion) {
 
       // Retornamos una copia del estado (...estado) modificando solo carrito y mensaje
       return { ...estado, carrito: nuevoCarrito, mensaje: 'Producto agregado.', tipoMensaje: 'success' };
+    }
+
+    // NUEVA ACCIÓN: Restar unidades del carrito
+    case 'RESTAR_DEL_CARRITO': {
+      const id = accion.payload;
+      const itemEnCarrito = estado.carrito.find((i) => i.id === id);
+
+      if (!itemEnCarrito) return estado;
+
+      // Si hay más de 1 unidad, restamos 1. Si solo hay 1, lo eliminamos del carrito.
+      if (itemEnCarrito.cantidad > 1) {
+        const nuevoCarrito = estado.carrito.map((i) =>
+          i.id === id ? { ...i, cantidad: i.cantidad - 1 } : i
+        );
+        return { ...estado, carrito: nuevoCarrito };
+      } else {
+        const nuevoCarrito = estado.carrito.filter((i) => i.id !== id);
+        return { ...estado, carrito: nuevoCarrito };
+      }
     }
 
     case 'QUITAR_DEL_CARRITO': {

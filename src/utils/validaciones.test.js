@@ -10,6 +10,7 @@ describe('validarProducto', () => {
     const datosValidos = {
       nombre: 'Dark Souls',
       categoria: 'RPG',
+      plataforma: 'PC',
       precio: 40000,
       stock: 10,
       imagen: 'https://ejemplo.com/img.jpg'
@@ -24,6 +25,7 @@ describe('validarProducto', () => {
     const datosDuplicados = {
       nombre: ' elden RING ', // Simulamos escritura descuidada
       categoria: 'RPG',
+      plataforma: 'PC',
       precio: 40000,
       stock: 10,
       imagen: 'https://ejemplo.com/img.jpg'
@@ -37,6 +39,7 @@ describe('validarProducto', () => {
     const datosInvalidos = {
       nombre: 'Juego OK',
       categoria: 'Cat OK',
+      plataforma: 'PC',
       precio: -500, // Error: precio negativo
       stock: 1.5,   // Error: stock decimal
       imagen: 'https://ejemplo.com/img.jpg'

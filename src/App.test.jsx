@@ -125,7 +125,7 @@ describe('App: integración de rutas, sesión y carrito', () => {
       await screen.findByRole('heading', { name: 'TU PORTAL DE VIDEOJUEGOS DIGITALES' }),
     ).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Lo mejor de lo mejor' })).toBeInTheDocument();
-    expect(screen.getAllByRole('link', { name: /^Ver / })).toHaveLength(3);
+    expect(screen.getAllByRole('button', { name: /Agregar al carrito/i })).toHaveLength(4);
   });
 
   it('descuenta el stock visible al confirmar la compra', async () => {
@@ -147,7 +147,7 @@ describe('App: integración de rutas, sesión y carrito', () => {
       await screen.findByRole('heading', { name: 'Tu carrito está vacío' }),
     ).toBeInTheDocument();
     await user.click(await screen.findByRole('link', { name: 'Juegos' }));
-    expect(await screen.findByText('Stock: 3')).toBeInTheDocument();
+    expect(await screen.findByText('Stock: 13')).toBeInTheDocument();
   });
 
   it('permite cerrar la alerta con el botón', async () => {

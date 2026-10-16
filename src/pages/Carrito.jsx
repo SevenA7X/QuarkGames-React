@@ -1,46 +1,45 @@
-
 import { useState } from 'react';
 import { Container, Row, Col, Card, Button, ListGroup } from 'react-bootstrap';
-import { Link } from 'react-router'; // Recordar que react-router 7 no usa react-router-dom
+import { Link } from 'react-router'; 
 import { useTienda } from '../context/TiendaContext.jsx';
 import { precioCLP } from '../utils/formatos.js';
 import ConfirmarModal from '../components/ConfirmarModal.jsx';
 
 export default function Carrito() {
-  // 1. Extraemos el estado global y el despachador
   const { estado, dispatch } = useTienda();
   const { productos, carrito } = estado;
   
-  // 2. Estado local para controlar si el modal de confirmación se muestra o no
   const [mostrarModal, setMostrarModal] = useState(false);
-
-  // Estado para el modal de compra
   const [mostrarModalCompra, setMostrarModalCompra] = useState(false);
 
-  // 3. Procesamos los datos: cruzamos el carrito con el catálogo para obtener los precios
   const detalle = carrito.map((item) => {
     const prod = productos.find((p) => p.id === item.id);
     return { ...prod, cantidad: item.cantidad };
   });
 
-  // 4. Calculamos el total matemático (acumulador)
   const total = detalle.reduce((suma, p) => suma + p.precio * p.cantidad, 0);
 
-  // Funciones que se comunican con nuestro Reducer
+  // Nuevas funciones de control
+  function sumar(id) {
+    dispatch({ type: 'AGREGAR_AL_CARRITO', payload: id });
+  }
+
+  function restar(id) {
+    dispatch({ type: 'RESTAR_DEL_CARRITO', payload: id });
+  }
+
   function quitar(id) {
     dispatch({ type: 'QUITAR_DEL_CARRITO', payload: id });
   }
 
   function vaciar() {
     dispatch({ type: 'VACIAR_CARRITO' });
-    setMostrarModal(false); // Cierra el modal tras vaciar
+    setMostrarModal(false); 
   }
 
-  // Función que se ejecuta al confirmar la compra en el modal.
-  // COMPRAR descuenta del stock las unidades del carrito y lo vacía (ver tiendaReducer.js).
   function confirmarCompra() {
     dispatch({ type: 'COMPRAR' });
-    setMostrarModalCompra(false); // Cierra el modal de compra
+    setMostrarModalCompra(false); 
   }
 
   return (
@@ -58,7 +57,6 @@ export default function Carrito() {
         </Card>
       ) : (
         <Row className="g-4">
-          {/* Columna Izquierda: Lista de productos en el carrito */}
           <Col xs={12} lg={8}>
             <ListGroup>
               {detalle.map((p) => (
@@ -67,23 +65,45 @@ export default function Carrito() {
                     <img 
                       src={p.imagen} 
                       alt={p.nombre} 
-                      style={{ width: '60px', height: '60px', objectFit: 'cover' }}
+                      style={{ width: '80px', height: '80px', objectFit: 'cover' }}
                       className="rounded" 
                     />
                     <div>
-                      <h5 className="mb-0">{p.nombre}</h5>
-                      <span className="text-muted">{precioCLP(p.precio)} x {p.cantidad}</span>
+                      <h5 className="mb-1">{p.nombre}</h5>
+                      <span className="text-muted d-block mb-2">{precioCLP(p.precio)} c/u</span>
+                      
+                      {/* Controles de cantidad integrados */}
+                      <div className="d-flex align-items-center gap-2">
+                        <Button variant="outline-secondary" size="sm" onClick={() => restar(p.id)}>
+                          -
+                        </Button>
+                        <span className="fw-bold" style={{ minWidth: '20px', textAlign: 'center' }}>
+                          {p.cantidad}
+                        </span>
+                        <Button 
+                          variant="outline-secondary" 
+                          size="sm" 
+                          onClick={() => sumar(p.id)}
+                          disabled={p.cantidad >= p.stock}
+                        >
+                          +
+                        </Button>
+                      </div>
+
                     </div>
                   </div>
-                  <Button variant="outline-danger" size="sm" onClick={() => quitar(p.id)}>
-                    Eliminar
-                  </Button>
+                  
+                  <div className="text-end">
+                    <div className="fw-bold fs-5 mb-2">{precioCLP(p.precio * p.cantidad)}</div>
+                    <Button variant="outline-danger" size="sm" onClick={() => quitar(p.id)}>
+                      Eliminar
+                    </Button>
+                  </div>
                 </ListGroup.Item>
               ))}
             </ListGroup>
           </Col>
           
-          {/* Columna Derecha: Panel de resumen (Total y botones de acción) */}
           <Col xs={12} lg={4}>
             <Card className="bg-light">
               <Card.Body>
@@ -91,11 +111,10 @@ export default function Carrito() {
                 <hr />
                 <div className="d-flex justify-content-between mb-3">
                   <strong>Total sin envío:</strong>
-                  <span className="fs-5">{precioCLP(total)}</span>
+                  <span className="fs-5 fw-bold text-primary">{precioCLP(total)}</span>
                 </div>
                 
                 <div className="d-grid gap-2">
-                  {/* Este botón ahora abre el modal de compra */}
                   <Button variant="success" size="lg" onClick={() => setMostrarModalCompra(true)}>
                     Proceder al pago
                   </Button>
@@ -109,7 +128,6 @@ export default function Carrito() {
         </Row>
       )}
 
-      {/* Componente Modal que creamos antes. Se muestra solo si mostrarModal es true */}
       <ConfirmarModal
         show={mostrarModal}
         onHide={() => setMostrarModal(false)}
@@ -118,7 +136,6 @@ export default function Carrito() {
         onConfirmar={vaciar}
       />
 
-      {/*Modal para CONFIRMAR LA COMPRA */}
       <ConfirmarModal
         show={mostrarModalCompra}
         onHide={() => setMostrarModalCompra(false)}

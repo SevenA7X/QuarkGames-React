@@ -89,6 +89,7 @@ export default function Admin() {
             <tr>
               <th>Nombre</th>
               <th>Categoría</th>
+              <th>Plataforma</th> {/* <-- NUEVA COLUMNA */}
               <th>Precio</th>
               <th>Stock</th>
               <th>Acciones</th>
@@ -101,6 +102,7 @@ export default function Admin() {
                 <tr key={p.id}>
                   <td>{p.nombre}</td>
                   <td>{p.categoria}</td>
+                  <td>{p.plataforma}</td> {/* <-- NUEVA CELDA */}
                   <td>{precioCLP(p.precio)}</td>
                   <td>
                     {p.stock} <Badge bg={info.variante}>{info.texto}</Badge>

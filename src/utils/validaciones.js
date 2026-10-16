@@ -1,6 +1,3 @@
-// ==========================================
-// src/utils/validaciones.js
-// ==========================================
 
 import { normalizar } from './formatos.js';
 
@@ -24,6 +21,10 @@ export function validarProducto(datos, productos, id = null) {
   // 3. Validar categoría
   if (datos.categoria.trim().length < 3)
     errores.categoria = 'Ingresa al menos 3 caracteres.';
+
+  //  Validar plataforma (mínimo 2 caracteres, ej: "PC")
+  if (!datos.plataforma || datos.plataforma.trim().length < 2)
+    errores.plataforma = 'Ingresa al menos 2 caracteres (ej: PC).';
     
   // 4. Validar precio: debe ser un número finito, mayor a cero y no estar vacío.
   if (
@@ -58,17 +59,18 @@ export function convertirProducto(datos) {
   return {
     nombre: datos.nombre.trim(),
     categoria: datos.categoria.trim(),
+    plataforma: datos.plataforma.trim(), 
     precio: Number(datos.precio),
     stock: Number(datos.stock),
     imagen: datos.imagen.trim(),
   };
 }
 
-// Utiliza Expresiones Regulares (Regex) para validar el formulario de contacto.
+// Utiliza Expresiones Regulares (Regex) para validar el formulario de contacto
 export function validarContacto(campos) {
   const errores = {};
   
-  // Regex para formato de email tradicional (texto@texto.dominio)
+  // Regex para formato de email tradicional 
   if (
     !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(
       campos.email.trim(),

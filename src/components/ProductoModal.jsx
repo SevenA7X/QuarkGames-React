@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { Modal, Form, Button } from 'react-bootstrap';
 import { validarProducto, convertirProducto } from '../utils/validaciones.js';
 
-// Campos del formulario. Definirlos en un arreglo evita repetir el mismo bloque cinco veces.
+// Campos del formulario. Definirlos en un arreglo evita repetir el mismo bloque.
 const CAMPOS = [
   { nombre: 'nombre', etiqueta: 'Nombre', tipo: 'text' },
-  { nombre: 'categoria', etiqueta: 'Categoría', tipo: 'text', placeholder: 'Ej: PS5' },
+  { nombre: 'categoria', etiqueta: 'Categoría', tipo: 'text', placeholder: 'Ej: Acción, RPG' },
+  { nombre: 'plataforma', etiqueta: 'Plataforma', tipo: 'text', placeholder: 'Ej: PC, PlayStation 5' },
   { nombre: 'precio', etiqueta: 'Precio (CLP)', tipo: 'number' },
   { nombre: 'stock', etiqueta: 'Stock', tipo: 'number' },
   { nombre: 'imagen', etiqueta: 'URL de la imagen', tipo: 'text', placeholder: 'https://...' },
@@ -24,6 +25,7 @@ export default function ProductoModal({ producto = null, productos, alGuardar, a
   const [datos, setDatos] = useState({
     nombre: producto?.nombre ?? '',
     categoria: producto?.categoria ?? '',
+    plataforma: producto?.plataforma ?? '',
     precio: producto ? String(producto.precio) : '',
     stock: producto ? String(producto.stock) : '',
     imagen: producto?.imagen ?? '',
