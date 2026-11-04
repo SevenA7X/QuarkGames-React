@@ -6,19 +6,13 @@ import ProductoModal from '../components/ProductoModal.jsx';
 import ConfirmarModal from '../components/ConfirmarModal.jsx';
 
 export default function Admin() {
-  // Ya no recibimos props: leemos el catálogo y enviamos acciones al reducer.
   const { estado, dispatch } = useTienda();
   const { productos } = estado;
 
-  // Estados locales de la interfaz (qué modal está abierto):
-  // - mostrarFormulario: si el modal de crear/editar está visible
-  // - productoEditando: el producto que se edita, o null cuando se crea uno nuevo
-  // - productoAEliminar: el producto pendiente de confirmación, o null si no hay ninguno
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [productoEditando, setProductoEditando] = useState(null);
   const [productoAEliminar, setProductoAEliminar] = useState(null);
 
-  // Estado derivado: las métricas se calculan en cada render, no se guardan en ningún lado.
   const totalProductos = productos.length;
   const unidadesEnStock = productos.reduce((suma, p) => suma + p.stock, 0);
   const valorInventario = productos.reduce((suma, p) => suma + p.precio * p.stock, 0);
@@ -34,16 +28,47 @@ export default function Admin() {
     setMostrarFormulario(true);
   }
 
-  function guardar(producto) {
-    // El reducer decide si es crear o editar según si el id ya existe.
-    dispatch({ type: 'GUARDAR_PRODUCTO', payload: producto });
-    setMostrarFormulario(false);
+  async function guardar(producto) {
+    const esEdicion = !!productoEditando;
+    const url = esEdicion
+      ? `http://localhost:8080/api/v1/juegos/${producto.id}`
+      : 'http://localhost:8080/api/v1/juegos';
+    const metodo = esEdicion ? 'PUT' : 'POST';
+
+    try {
+      const respuesta = await fetch(url, {
+        method: metodo,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(producto)
+      });
+
+      if (respuesta.ok) {
+        const dataGuardada = await respuesta.json();
+        dispatch({ type: 'GUARDAR_PRODUCTO', payload: dataGuardada });
+        setMostrarFormulario(false);
+      } else {
+        console.error("Error del backend al guardar el producto");
+      }
+    } catch (error) {
+      console.error("Error de red al intentar guardar:", error);
+    }
   }
 
-  function confirmarEliminar() {
-    // El reducer también quita el producto del carrito para mantener la consistencia.
-    dispatch({ type: 'ELIMINAR_PRODUCTO', payload: productoAEliminar.id });
-    setProductoAEliminar(null);
+  async function confirmarEliminar() {
+    try {
+      const respuesta = await fetch(`http://localhost:8080/api/v1/juegos/${productoAEliminar.id}`, {
+        method: 'DELETE'
+      });
+
+      if (respuesta.ok) {
+        dispatch({ type: 'ELIMINAR_PRODUCTO', payload: productoAEliminar.id });
+        setProductoAEliminar(null);
+      } else {
+        console.error("Error del backend al intentar eliminar el producto");
+      }
+    } catch (error) {
+      console.error("Error de red al intentar eliminar:", error);
+    }
   }
 
   const metricas = [
@@ -62,7 +87,6 @@ export default function Admin() {
         </Button>
       </div>
 
-      {/* Tarjetas de resumen */}
       <Row xs={1} sm={2} lg={4} className="g-3 mb-4">
         {metricas.map((m) => (
           <Col key={m.titulo}>
@@ -78,7 +102,6 @@ export default function Admin() {
         ))}
       </Row>
 
-      {/* Tabla del CRUD. 'responsive' agrega scroll horizontal en pantallas pequeñas */}
       {productos.length === 0 ? (
         <div className="alert alert-info text-center">
           No hay productos. Crea el primero con el botón "Nuevo producto".
@@ -87,9 +110,10 @@ export default function Admin() {
         <Table responsive hover className="align-middle">
           <thead>
             <tr>
-              <th>Nombre</th>
+              <th>ID</th>
+              <th>Título</th>
               <th>Categoría</th>
-              <th>Plataforma</th> {/* <-- NUEVA COLUMNA */}
+              <th>Plataforma</th>
               <th>Precio</th>
               <th>Stock</th>
               <th>Acciones</th>
@@ -98,11 +122,13 @@ export default function Admin() {
           <tbody>
             {productos.map((p) => {
               const info = estadoStock(p.stock);
+
               return (
                 <tr key={p.id}>
-                  <td>{p.nombre}</td>
-                  <td>{p.categoria}</td>
-                  <td>{p.plataforma}</td> {/* <-- NUEVA CELDA */}
+                  <td>{p.id}</td>
+                  <td className="fw-bold">{p.titulo}</td>
+                  <td>{p.categoria?.nombre ?? p.categoriaId ?? 'N/A'}</td>
+                  <td>{p.plataforma}</td>
                   <td>{precioCLP(p.precio)}</td>
                   <td>
                     {p.stock} <Badge bg={info.variante}>{info.texto}</Badge>
@@ -131,7 +157,6 @@ export default function Admin() {
         </Table>
       )}
 
-      {/* El modal solo existe mientras está abierto: así el formulario siempre parte limpio */}
       {mostrarFormulario && (
         <ProductoModal
           producto={productoEditando}
@@ -145,7 +170,7 @@ export default function Admin() {
         show={productoAEliminar !== null}
         onHide={() => setProductoAEliminar(null)}
         titulo="Eliminar producto"
-        mensaje={`¿Seguro que deseas eliminar "${productoAEliminar?.nombre}"? También se quitará del carrito.`}
+        mensaje={`¿Seguro que deseas eliminar "${productoAEliminar?.titulo}" de la base de datos?`}
         onConfirmar={confirmarEliminar}
       />
     </Container>

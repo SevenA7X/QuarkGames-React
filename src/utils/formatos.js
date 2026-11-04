@@ -22,9 +22,30 @@ export const normalizar = (texto) =>
 
 // Recibe la cantidad de stock y retorna un objeto con el texto a mostrar 
 // y la "variante" (color) que usará el componente <Badge> de React Bootstrap.
+
+
 export function estadoStock(stock) {
-  if (stock <= 0) return { texto: 'Sin stock', variante: 'danger' }; // Rojo
-  if (stock <= 3)
-    return { texto: `Últimas ${stock} unidades`, variante: 'warning' }; // Amarillo
-  return { texto: 'Disponible', variante: 'success' }; // Verde
+  // 1. Sin stock (0): Gris
+  if (stock <= 0) {
+    return { texto: 'Agotado', variante: 'secondary' }; 
+  }
+  
+  // 2. Stock crítico (1 a 5): Rojo
+  if (stock <= 5) {
+    const texto = stock === 1 ? 'Última 1 unidad' : `Últimas ${stock} unidades`;
+    return { texto, variante: 'danger' }; 
+  }
+  
+  // 3. Stock bajo (6 a 10): Naranjo
+  if (stock <= 10) {
+    return { texto: 'Disponible', variante: 'naranja' }; 
+  }
+  
+  // 4. Stock medio (11 a 19): Amarillo
+  if (stock < 20) {
+    return { texto: 'Disponible', variante: 'warning' }; 
+  }
+  
+  // 5. Stock óptimo (20 hacia arriba): Verde
+  return { texto: 'Disponible', variante: 'success' }; 
 }

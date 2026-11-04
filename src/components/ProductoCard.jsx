@@ -10,18 +10,17 @@ export default function ProductoCard({ producto }) {
     dispatch({ type: 'AGREGAR_AL_CARRITO', payload: producto.id });
   }
 
-  // Mantenemos solo el color identificador de la plataforma
   function getPlataformaColor(plataforma) {
     switch (plataforma) {
       case 'PlayStation 5':
-        return 'primary'; // Azul
+        return 'primary'; 
       case 'Xbox Series X|S':
-        return 'success'; // Verde
+        return 'success'; 
       case 'Nintendo Switch':
-        return 'danger'; // Rojo
+        return 'danger'; 
       case 'PC':
       default:
-        return 'dark'; // Negro
+        return 'dark'; 
     }
   }
 
@@ -30,41 +29,38 @@ export default function ProductoCard({ producto }) {
       <Card.Img 
         variant="top" 
         src={producto.imagen} 
-        alt={producto.nombre} 
+        alt={producto.titulo} 
         style={{ height: '160px', objectFit: 'cover' }} 
       />
       
       <Card.Body className="d-flex flex-column p-3">
+        {/* Bloque superior: Etiquetas y Título */}
         <div className="mb-2 d-flex gap-1 flex-wrap">
-          {/* Etiqueta de plataforma: Usa el color de la marca */}
-          <Badge bg={getPlataformaColor(producto.plataforma)} style={{ fontSize: '0.75rem' }}>
+          <Badge bg={getPlataformaColor(producto.plataforma)}>
             {producto.plataforma}
           </Badge>
-          {/* Etiqueta de categoría: Diseño neutral, limpio y secundario */}
           <Badge bg="light" text="dark" className="border border-secondary-subtle" style={{ fontSize: '0.75rem' }}>
-            {producto.categoria}
+            {producto.categoria?.nombre ?? producto.categoriaId ?? 'General'}
           </Badge>
         </div>
         
-        <Card.Title className="fs-6 fw-bold mb-1">{producto.nombre}</Card.Title>
+        <Card.Title className="fs-6 fw-bold mb-1">{producto.titulo}</Card.Title>
         
-        <Card.Text className="fw-bold mb-2 mt-1">
-          {precioCLP(producto.precio)}
-        </Card.Text>
-        
-        <div className="mb-3">
-          <Badge bg={stockInfo.variante} style={{ fontSize: '0.7rem' }}>{stockInfo.texto}</Badge>
-          <span className="text-muted ms-1" style={{ fontSize: '0.75rem' }}>Stock: {producto.stock}</span>
+        {/* Bloque inferior: Empujado hacia abajo automáticamente con mt-auto */}
+        <div className="mt-auto">
+          <Card.Text className="fw-bold mb-2 mt-2">
+            {precioCLP(producto.precio)}
+          </Card.Text>
+          
+          <div className="mb-3">
+            <Badge bg={stockInfo.variante} style={{ fontSize: '0.7rem' }}>{stockInfo.texto}</Badge>
+            <span className="text-muted ms-1" style={{ fontSize: '0.75rem' }}>Stock: {producto.stock}</span>
+          </div>
+          
+          <Button className="w-100 btn-corporativo" onClick={manejarAgregar}>
+            Agregar al carrito
+          </Button>
         </div>
-        
-        <Button 
-          variant={getPlataformaColor(producto.plataforma)} 
-          className="mt-auto btn-sm" 
-          disabled={producto.stock === 0}
-          onClick={manejarAgregar}
-        >
-          Agregar al carrito
-        </Button>
       </Card.Body>
     </Card>
   );

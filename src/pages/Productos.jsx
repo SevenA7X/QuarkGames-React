@@ -5,36 +5,36 @@ import ProductoCard from '../components/ProductoCard.jsx';
 import { normalizar } from '../utils/formatos.js';
 
 export default function Productos() {
-  // 1. Extraemos SOLO el estado de los productos de nuestro Contexto Global
   const { estado } = useTienda();
   const { productos } = estado;
 
-  // 2. Estados locales para los filtros del catálogo
   const [busqueda, setBusqueda] = useState('');
   const [categoria, setCategoria] = useState('');
-  const [plataforma, setPlataforma] = useState(''); // <-- NUEVO ESTADO
+  const [plataforma, setPlataforma] = useState('');
   const [precioMax, setPrecioMax] = useState('');
   const [soloConStock, setSoloConStock] = useState(false);
 
-  // 3. Obtenemos las categorías y plataformas únicas dinámicamente para los selectores 
-  const categoriasUnicas = [...new Set(productos.map((p) => p.categoria))];
-  const plataformasUnicas = [...new Set(productos.map((p) => p.plataforma))]; // <-- NUEVO ARREGLO
+  // CORRECCIÓN 1: Extraemos estrictamente el 'nombre' de la categoría (texto) y filtramos nulos
+  const categoriasUnicas = [...new Set(productos.map((p) => p.categoria?.nombre ?? 'General').filter(Boolean))];
+  
+  // Extraemos plataformas únicas evitando nulos
+  const plataformasUnicas = [...new Set(productos.map((p) => p.plataforma).filter(Boolean))]; 
 
-  // 4. Lógica de Filtrado
   const visibles = productos.filter((p) => {
+    // CORRECCIÓN 2: El atributo del DTO es 'titulo', no 'nombre'
     const cumpleBusqueda = busqueda
-      ? normalizar(p.nombre).includes(normalizar(busqueda))
+      ? normalizar(p.titulo || '').includes(normalizar(busqueda))
       : true;
       
-    const cumpleCategoria = categoria ? p.categoria === categoria : true;
+    // CORRECCIÓN 3: Comparamos contra el nombre de la categoría extraído de forma segura
+    const nombreCat = p.categoria?.nombre ?? 'General';
+    const cumpleCategoria = categoria ? nombreCat === categoria : true;
     
-    // <-- NUEVO FILTRO DE PLATAFORMA
     const cumplePlataforma = plataforma ? p.plataforma === plataforma : true; 
     
     const cumplePrecio = precioMax ? p.precio <= Number(precioMax) : true;
     const cumpleStock = soloConStock ? p.stock > 0 : true;
 
-    // Solo mostramos el producto si pasa todos los filtros
     return cumpleBusqueda && cumpleCategoria && cumplePlataforma && cumplePrecio && cumpleStock;
   });
 
@@ -42,11 +42,10 @@ export default function Productos() {
     <Container className="py-4">
       <h1 className="mb-4">Catálogo de Productos</h1>
       
-      {/* Panel de Filtros */}
       <Row className="mb-4 g-3 align-items-end">
         <Col xs={12} md={3}>
           <Form.Group>
-            <Form.Label>Buscar por nombre</Form.Label>
+            <Form.Label>Buscar por título</Form.Label>
             <Form.Control
               type="text"
               placeholder="Ej: Resident Evil"
@@ -61,6 +60,7 @@ export default function Productos() {
             <Form.Label>Categoría</Form.Label>
             <Form.Select value={categoria} onChange={(e) => setCategoria(e.target.value)}>
               <option value="">Todas</option>
+              {/* Ahora 'cat' es un texto puro y React no arrojará error */}
               {categoriasUnicas.map((cat) => (
                 <option key={cat} value={cat}>{cat}</option>
               ))}
@@ -68,7 +68,6 @@ export default function Productos() {
           </Form.Group>
         </Col>
 
-        {/* <-- NUEVO SELECTOR DE PLATAFORMA */}
         <Col xs={12} sm={4} md={2}>
           <Form.Group>
             <Form.Label>Plataforma</Form.Label>
@@ -107,7 +106,6 @@ export default function Productos() {
         </Col>
       </Row>
 
-      {/* Grilla de resultados */}
       {visibles.length === 0 ? (
         <div className="alert alert-info text-center">
           No hay productos que coincidan con los filtros.

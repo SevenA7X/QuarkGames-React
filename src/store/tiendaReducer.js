@@ -45,7 +45,10 @@ export function tiendaReducer(estado, accion) {
         return { ...estado, carrito: nuevoCarrito };
       }
     }
-
+    
+    case 'CARGAR_PRODUCTOS_DESDE_DB': {
+      return { ...estado, productos: accion.payload };
+    }
     case 'QUITAR_DEL_CARRITO': {
       // Usamos .filter() para crear un nuevo arreglo excluyendo el ID seleccionado
       const nuevoCarrito = estado.carrito.filter((i) => i.id !== accion.payload);

@@ -30,3 +30,19 @@ a { color: #165cbd; }
 
 /* Alerta flotante de avisos (producto agregado, compra realizada...): centrada arriba, por encima de todo */
 .alerta-flotante { position: fixed; top: 1rem; left: 50%; transform: translateX(-50%); z-index: 1090; width: min(92vw, 480px); }
+
+.bg-naranja {
+  background-color: #fd7e14 !important;
+  color: white;
+}
+
+.btn-corporativo {
+  background-color: #3F3D50 !important;
+  border-color: #3F3D50 !important;
+  color: white !important;
+}
+
+.btn-corporativo:hover {
+  background-color: #292935 !important;
+  border-color: #292935 !important;
+}
