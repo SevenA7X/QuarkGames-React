@@ -1,16 +1,18 @@
 import { describe, it, expect } from 'vitest';
-import { validarProducto, validarLogin } from './validaciones.js';
+import { validarProducto, validarLogin, validarContacto } from './validaciones.js';
 
 describe('validarProducto', () => {
+  // Los productos usan los campos del backend: titulo, categoriaId, plataforma, descripcion...
   const productosExistentes = [
-    { id: 1, nombre: 'Elden Ring' }
+    { id: 1, titulo: 'Elden Ring' }
   ];
 
   it('debe retornar un objeto vacío si los datos son correctos', () => {
     const datosValidos = {
-      nombre: 'Dark Souls',
-      categoria: 'RPG',
+      titulo: 'Dark Souls',
+      categoriaId: 6,
       plataforma: 'PC',
+      descripcion: 'RPG de acción exigente.',
       precio: 40000,
       stock: 10,
       imagen: 'https://ejemplo.com/img.jpg'
@@ -21,25 +23,27 @@ describe('validarProducto', () => {
     expect(Object.keys(errores)).toHaveLength(0);
   });
 
-  it('debe retornar error si el nombre ya existe (ignorando mayúsculas)', () => {
+  it('debe retornar error si el título ya existe (ignorando mayúsculas)', () => {
     const datosDuplicados = {
-      nombre: ' elden RING ', // Simulamos escritura descuidada
-      categoria: 'RPG',
+      titulo: ' elden RING ', // Simulamos escritura descuidada
+      categoriaId: 6,
       plataforma: 'PC',
+      descripcion: 'RPG de acción exigente.',
       precio: 40000,
       stock: 10,
       imagen: 'https://ejemplo.com/img.jpg'
     };
     
     const errores = validarProducto(datosDuplicados, productosExistentes);
-    expect(errores.nombre).toBe('Ya existe un producto con ese nombre.');
+    expect(errores.titulo).toBe('Ya existe un producto con ese título.');
   });
 
   it('debe retornar errores si los números son inválidos', () => {
     const datosInvalidos = {
-      nombre: 'Juego OK',
-      categoria: 'Cat OK',
+      titulo: 'Juego OK',
+      categoriaId: 6,
       plataforma: 'PC',
+      descripcion: 'Descripción válida.',
       precio: -500, // Error: precio negativo
       stock: 1.5,   // Error: stock decimal
       imagen: 'https://ejemplo.com/img.jpg'
@@ -53,7 +57,6 @@ describe('validarProducto', () => {
 
 describe('validarContacto', () => {
     it('debe retornar error si el correo electrónico tiene un formato inválido', () => {
-      const { validarContacto } = require('./validaciones.js');
       const camposInvalidos = {
         email: 'correo-sin-arroba.com',
         asunto: 'Consulta válida',
