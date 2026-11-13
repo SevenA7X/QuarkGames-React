@@ -1,50 +1,70 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { leerJSON, guardarJSON } from '../services/storage.js';
+import { api, guardarToken, limpiarToken, obtenerToken } from '../services/api.js';
 
 // 1. Crear el contexto de autenticación (la "burbuja" de datos de sesión).
 const AuthContext = createContext();
 
-// Credenciales del proyecto académico. En una aplicación real las validaría un servidor.
-const USUARIO_ADMIN = 'admin';
-const CLAVE_ADMIN = '1234';
-const CLAVE_STORAGE = 'quark_sesion';
-
-// 2. Crear el Provider: el componente que guarda la sesión y la comparte con toda la app.
+// 2. Crear el Provider: valida las credenciales contra el MS de autenticación (a través del Gateway)
+//    y comparte la sesión con toda la app.
 export function AuthProvider({ children }) {
-  // Pasamos una función a useState para que localStorage se lea solo una vez, al montar.
-  // Así, si el administrador recarga la página con F5, la sesión sigue activa.
-  const [sesionActiva, setSesionActiva] = useState(
-    () => leerJSON(CLAVE_STORAGE, false) === true,
-  );
+  // sesion = { usuario, rol } cuando hay un token válido, o null si no hay sesión
+  const [sesion, setSesion] = useState(null);
+  // Mientras se comprueba el token guardado, RutaAdmin no debe redirigir al login
+  const [cargando, setCargando] = useState(() => obtenerToken() !== null);
 
-  // Cada vez que la sesión cambia, la sincronizamos con localStorage.
   useEffect(() => {
-    guardarJSON(CLAVE_STORAGE, sesionActiva);
-  }, [sesionActiva]);
-
-  // Valida las credenciales y abre la sesión. Devuelve true o false para que
-  // quien la llame (Login.jsx) decida si navega o muestra un error.
-  function login(usuario, contrasena) {
-    const credencialesValidas =
-      usuario.trim() === USUARIO_ADMIN && contrasena === CLAVE_ADMIN;
-    if (credencialesValidas) {
-      setSesionActiva(true);
+    // Persistencia de sesión: si al recargar (F5) hay un token guardado, se pregunta al backend
+    // si sigue vigente. Si venció o fue alterado, se descarta.
+    let vigente = true;
+    if (obtenerToken()) {
+      api('/auth/validar')
+        .then((datos) => vigente && setSesion(datos))
+        .catch(() => {
+          limpiarToken();
+          if (vigente) setSesion(null);
+        })
+        .finally(() => vigente && setCargando(false));
     }
-    return credencialesValidas;
+
+    // api.js avisa con este evento cuando el backend rechaza el token (401)
+    const alExpirar = () => setSesion(null);
+    window.addEventListener('quark:sesion-expirada', alExpirar);
+    return () => {
+      vigente = false;
+      window.removeEventListener('quark:sesion-expirada', alExpirar);
+    };
+  }, []);
+
+  // Inicia sesión en el MS de autenticación. Si las credenciales son incorrectas,
+  // api() lanza un ApiError con el mensaje del backend ("Usuario o contraseña incorrectos.")
+  // y Login.jsx lo muestra.
+  async function login(usuario, contrasena) {
+    const respuesta = await api('/auth/login', {
+      method: 'POST',
+      body: { usuario: usuario.trim(), clave: contrasena },
+    });
+    guardarToken(respuesta.token);
+    setSesion({ usuario: respuesta.usuario, rol: respuesta.rol });
+    return true;
   }
 
   function logout() {
-    setSesionActiva(false);
+    limpiarToken();
+    setSesion(null);
   }
 
+  const sesionActiva = sesion !== null;
+
   return (
-    <AuthContext.Provider value={{ sesionActiva, login, logout }}>
+    <AuthContext.Provider value={{ sesion, sesionActiva, cargando, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
 // 3. Hook personalizado para consumir el contexto con una sola línea.
+// El hook vive junto a su Provider a propósito (patrón habitual de Context).
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   const context = useContext(AuthContext);
   // Validación de seguridad: avisa si alguien usa el hook fuera del Provider.

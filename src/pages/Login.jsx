@@ -13,14 +13,15 @@ export default function Login() {
   const [usuario, setUsuario] = useState('');
   const [contrasena, setContrasena] = useState('');
   const [errores, setErrores] = useState({}); // errores por campo (campos vacíos)
-  const [error, setError] = useState(''); // error general (credenciales incorrectas)
+  const [error, setError] = useState(''); // error general (credenciales incorrectas o sin conexión)
+  const [enviando, setEnviando] = useState(false); // evita doble envío mientras responde el backend
 
   // Si ya hay una sesión abierta no tiene sentido mostrar el login: vamos directo al panel.
   if (sesionActiva) {
     return <Navigate to="/admin" replace />;
   }
 
-  function enviar(e) {
+  async function enviar(e) {
     e.preventDefault();
 
     // 1. Validar que los campos no estén vacíos. validarLogin devuelve un objeto con un error por campo.
@@ -31,12 +32,17 @@ export default function Login() {
       return;
     }
 
-    // 2. Comprobar las credenciales. login() abre la sesión y devuelve true o false.
-    if (login(usuario, contrasena)) {
+    // 2. Comprobar las credenciales en el MS de autenticación. Si fallan, login() lanza un error
+    //    con el mensaje del backend ("Usuario o contraseña incorrectos." o "No se pudo conectar...").
+    setEnviando(true);
+    try {
+      await login(usuario, contrasena);
       setError('');
       navigate('/admin');
-    } else {
-      setError('Usuario o contraseña incorrectos.');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setEnviando(false);
     }
   }
 
@@ -74,8 +80,8 @@ export default function Login() {
           <Form.Control.Feedback type="invalid">{errores.contrasena}</Form.Control.Feedback>
         </Form.Group>
 
-        <Button type="submit" variant="primary">
-          Ingresar
+        <Button type="submit" variant="primary" disabled={enviando}>
+          {enviando ? 'Ingresando...' : 'Ingresar'}
         </Button>
       </Form>
 

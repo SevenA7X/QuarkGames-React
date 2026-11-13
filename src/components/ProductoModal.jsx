@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Modal, Form, Button } from 'react-bootstrap';
+import { Modal, Form, Button, Alert } from 'react-bootstrap';
 import { validarProducto, convertirProducto } from '../utils/validaciones.js';
 
 // 1. Definimos las opciones para los menús desplegables
@@ -36,7 +36,8 @@ const CAMPOS = [
   { nombre: 'imagen', etiqueta: 'URL de la imagen', tipo: 'text', placeholder: 'https://...' },
 ];
 
-export default function ProductoModal({ producto = null, productos, alGuardar, alCerrar }) {
+// errorServidor: mensaje del backend si rechazó el guardado (ej.: 401 sin sesión, 400 datos inválidos)
+export default function ProductoModal({ producto = null, productos, alGuardar, alCerrar, errorServidor = '' }) {
   const [datos, setDatos] = useState({
     titulo: producto?.titulo ?? '',
     categoriaId: producto?.categoriaId ?? producto?.categoria?.id ?? '', 
@@ -75,6 +76,7 @@ export default function ProductoModal({ producto = null, productos, alGuardar, a
 
       <Form noValidate onSubmit={enviar}>
         <Modal.Body>
+          {errorServidor && <Alert variant="danger">{errorServidor}</Alert>}
           {CAMPOS.map((campo) => (
             <Form.Group key={campo.nombre} className="mb-3" controlId={`producto-${campo.nombre}`}>
               <Form.Label>{campo.etiqueta}</Form.Label>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Container, Row, Col, Card, Table, Button, Badge } from 'react-bootstrap';
+import { Container, Row, Col, Card, Table, Button, Badge, Alert } from 'react-bootstrap';
 import { useTienda } from '../context/TiendaContext.jsx';
+import { api } from '../services/api.js';
 import { precioCLP, estadoStock } from '../utils/formatos.js';
 import ProductoModal from '../components/ProductoModal.jsx';
 import ConfirmarModal from '../components/ConfirmarModal.jsx';
@@ -12,6 +13,7 @@ export default function Admin() {
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [productoEditando, setProductoEditando] = useState(null);
   const [productoAEliminar, setProductoAEliminar] = useState(null);
+  const [error, setError] = useState('');
 
   const totalProductos = productos.length;
   const unidadesEnStock = productos.reduce((suma, p) => suma + p.stock, 0);
@@ -19,55 +21,53 @@ export default function Admin() {
   const sinStock = productos.filter((p) => p.stock <= 0).length;
 
   function abrirNuevo() {
+    setError('');
     setProductoEditando(null);
     setMostrarFormulario(true);
   }
 
   function abrirEditar(producto) {
+    setError('');
     setProductoEditando(producto);
     setMostrarFormulario(true);
   }
 
+  // Crear y editar usan api(), que agrega el token JWT del administrador (Authorization: Bearer).
+  // Sin token válido el catálogo responde 401 y api() cierra la sesión.
   async function guardar(producto) {
     const esEdicion = !!productoEditando;
-    const url = esEdicion
-      ? `http://localhost:8080/api/v1/juegos/${producto.id}`
-      : 'http://localhost:8080/api/v1/juegos';
-    const metodo = esEdicion ? 'PUT' : 'POST';
+    // El id lo genera la base de datos: al crear no se envía (ProductoModal pone uno temporal)
+    // eslint-disable-next-line no-unused-vars
+    const { id, ...datos } = producto;
 
     try {
-      const respuesta = await fetch(url, {
-        method: metodo,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(producto)
+      const guardado = await api(esEdicion ? `/juegos/${productoEditando.id}` : '/juegos', {
+        method: esEdicion ? 'PUT' : 'POST',
+        body: datos,
       });
-
-      if (respuesta.ok) {
-        const dataGuardada = await respuesta.json();
-        dispatch({ type: 'GUARDAR_PRODUCTO', payload: dataGuardada });
-        setMostrarFormulario(false);
-      } else {
-        console.error("Error del backend al guardar el producto");
-      }
-    } catch (error) {
-      console.error("Error de red al intentar guardar:", error);
+      dispatch({ type: 'GUARDAR_PRODUCTO', payload: guardado });
+      dispatch({
+        type: 'MOSTRAR_MENSAJE',
+        payload: { mensaje: esEdicion ? 'Producto actualizado.' : 'Producto creado.' },
+      });
+      setMostrarFormulario(false);
+      setError('');
+    } catch (err) {
+      const campos = Object.values(err.errores ?? {});
+      setError(campos.length ? `${err.message} ${campos.join(' · ')}` : err.message);
     }
   }
 
   async function confirmarEliminar() {
     try {
-      const respuesta = await fetch(`http://localhost:8080/api/v1/juegos/${productoAEliminar.id}`, {
-        method: 'DELETE'
-      });
-
-      if (respuesta.ok) {
-        dispatch({ type: 'ELIMINAR_PRODUCTO', payload: productoAEliminar.id });
-        setProductoAEliminar(null);
-      } else {
-        console.error("Error del backend al intentar eliminar el producto");
-      }
-    } catch (error) {
-      console.error("Error de red al intentar eliminar:", error);
+      await api(`/juegos/${productoAEliminar.id}`, { method: 'DELETE' });
+      dispatch({ type: 'ELIMINAR_PRODUCTO', payload: productoAEliminar.id });
+      dispatch({ type: 'MOSTRAR_MENSAJE', payload: { mensaje: 'Producto eliminado.' } });
+      setError('');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setProductoAEliminar(null);
     }
   }
 
@@ -86,6 +86,12 @@ export default function Admin() {
           Nuevo producto
         </Button>
       </div>
+
+      {error && !mostrarFormulario && (
+        <Alert variant="danger" dismissible onClose={() => setError('')}>
+          {error}
+        </Alert>
+      )}
 
       <Row xs={1} sm={2} lg={4} className="g-3 mb-4">
         {metricas.map((m) => (
@@ -163,6 +169,7 @@ export default function Admin() {
           productos={productos}
           alGuardar={guardar}
           alCerrar={() => setMostrarFormulario(false)}
+          errorServidor={error}
         />
       )}
 
