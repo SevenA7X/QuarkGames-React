@@ -1,10 +1,12 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import App from './App.jsx';
 import { TiendaProvider } from './context/TiendaContext.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
+import { simularBackend } from './test/backendFalso.js';
+import { guardarToken } from './services/api.js';
 
 // App necesita un router y los dos contextos, porque Header, Layout y las páginas
 // usan useTienda() y useAuth(). BrowserRouter vive en main.jsx, que no se monta en las pruebas,
@@ -20,6 +22,13 @@ function renderizarApp(ruta = '/') {
     </MemoryRouter>,
   );
 }
+
+// Catálogo, carrito y login vienen del backend. En las pruebas, simularBackend() reemplaza
+// fetch por un backend en memoria que responde como los microservicios reales.
+let backend;
+beforeEach(() => {
+  backend = simularBackend();
+});
 
 describe('App: integración de rutas, sesión y carrito', () => {
   it('navega a Productos y marca el enlace activo', async () => {
@@ -80,9 +89,9 @@ describe('App: integración de rutas, sesión y carrito', () => {
     const botones = await screen.findAllByRole('button', { name: 'Agregar al carrito' });
     await user.click(botones[0]);
 
-    // 3 Comprobar: el Header y el mensaje leen el mismo estado global
-    expect(screen.getByRole('link', { name: 'Carrito 1' })).toBeInTheDocument();
-    expect(screen.getByRole('alert')).toHaveTextContent('Producto agregado.');
+    // 3 Comprobar: el Header y el mensaje leen la respuesta del MS Carrito
+    expect(await screen.findByRole('link', { name: 'Carrito 1' })).toBeInTheDocument();
+    expect(await screen.findByRole('alert')).toHaveTextContent('Producto agregado.');
   });
 
   it('muestra la página no encontrada para una ruta desconocida', async () => {
@@ -125,7 +134,7 @@ describe('App: integración de rutas, sesión y carrito', () => {
       await screen.findByRole('heading', { name: 'TU PORTAL DE VIDEOJUEGOS DIGITALES' }),
     ).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Lo mejor de lo mejor' })).toBeInTheDocument();
-    expect(screen.getAllByRole('button', { name: /Agregar al carrito/i })).toHaveLength(4);
+    expect(await screen.findAllByRole('button', { name: /Agregar al carrito/i })).toHaveLength(4);
   });
 
   it('descuenta el stock visible al confirmar la compra', async () => {
@@ -137,8 +146,9 @@ describe('App: integración de rutas, sesión y carrito', () => {
     // 2 Actuar: agregamos 2 unidades, vamos al carrito y confirmamos el pago
     const botones = await screen.findAllByRole('button', { name: 'Agregar al carrito' });
     await user.click(botones[0]);
+    await screen.findByRole('link', { name: 'Carrito 1' });
     await user.click(botones[0]);
-    await user.click(screen.getByRole('link', { name: 'Carrito 2' }));
+    await user.click(await screen.findByRole('link', { name: 'Carrito 2' }));
     await user.click(screen.getByRole('button', { name: 'Proceder al pago' }));
     await user.click(await screen.findByRole('button', { name: 'Confirmar' }));
 
@@ -147,7 +157,8 @@ describe('App: integración de rutas, sesión y carrito', () => {
       await screen.findByRole('heading', { name: 'Tu carrito está vacío' }),
     ).toBeInTheDocument();
     await user.click(await screen.findByRole('link', { name: 'Juegos' }));
-    expect(await screen.findByText('Stock: 13')).toBeInTheDocument();
+    expect(await screen.findByText('Stock: 3')).toBeInTheDocument();
+    expect(backend.db.juegos[0].stock).toBe(3);
   });
 
   it('permite cerrar la alerta con el botón', async () => {
@@ -156,7 +167,7 @@ describe('App: integración de rutas, sesión y carrito', () => {
     renderizarApp('/productos');
     const botones = await screen.findAllByRole('button', { name: 'Agregar al carrito' });
     await user.click(botones[0]);
-    expect(screen.getByRole('alert')).toHaveTextContent('Producto agregado.');
+    expect(await screen.findByRole('alert')).toHaveTextContent('Producto agregado.');
 
     // 2 Actuar
     await user.click(screen.getByRole('button', { name: 'Cerrar' }));
@@ -198,5 +209,53 @@ describe('App: integración de rutas, sesión y carrito', () => {
     expect(
       screen.queryByRole('heading', { name: 'Administración de productos' }),
     ).not.toBeInTheDocument();
+  });
+  it('mantiene la sesión al recargar si el token sigue vigente', async () => {
+    // 1 Preparar: simulamos un F5 con un token ya guardado en localStorage
+    guardarToken(backend.TOKEN);
+
+    // 2 Actuar: se entra directo al panel
+    renderizarApp('/admin');
+
+    // 3 Comprobar: AuthContext validó el token con /auth/validar y RutaAdmin dejó pasar
+    expect(
+      await screen.findByRole('heading', { name: 'Administración de productos' }),
+    ).toBeInTheDocument();
+  });
+
+  it('elimina un producto desde el panel enviando el token', async () => {
+    // 1 Preparar
+    const user = userEvent.setup();
+    guardarToken(backend.TOKEN);
+    renderizarApp('/admin');
+    await screen.findByText('Elden Ring');
+
+    // 2 Actuar: eliminar el primer producto y confirmar
+    await user.click(screen.getAllByRole('button', { name: 'Eliminar' })[0]);
+    await user.click(await screen.findByRole('button', { name: 'Confirmar' }));
+
+    // 3 Comprobar: se envió DELETE con el token y el producto desapareció de la tabla
+    expect(await screen.findByRole('alert')).toHaveTextContent('Producto eliminado.');
+    expect(screen.queryByText('Elden Ring')).not.toBeInTheDocument();
+    const llamada = backend.fetchSpy.mock.calls.find(([, op]) => op?.method === 'DELETE');
+    expect(llamada[0]).toMatch(/\/juegos\/7$/);
+    expect(llamada[1].headers.Authorization).toBe(`Bearer ${backend.TOKEN}`);
+  });
+
+  it('avisa cuando se intenta superar el stock', async () => {
+    // 1 Preparar: Mario Kart tiene stock 18; dejamos el stock de Elden Ring en 1
+    backend.db.juegos[0].stock = 1;
+    const user = userEvent.setup();
+    renderizarApp('/productos');
+    const botones = await screen.findAllByRole('button', { name: 'Agregar al carrito' });
+
+    // 2 Actuar: la segunda unidad ya no alcanza
+    await user.click(botones[0]);
+    await screen.findByRole('link', { name: 'Carrito 1' });
+    await user.click(botones[0]);
+
+    // 3 Comprobar: el MS Carrito respondió 409 y el contador no cambió
+    expect(await screen.findByText(/Stock insuficiente\./)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Carrito 1' })).toBeInTheDocument();
   });
 });

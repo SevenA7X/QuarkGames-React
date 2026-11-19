@@ -3,11 +3,12 @@ import { useTienda } from '../context/TiendaContext.jsx';
 import { precioCLP, estadoStock } from '../utils/formatos.js';
 
 export default function ProductoCard({ producto }) {
-  const { dispatch } = useTienda();
+  const { agregarAlCarrito } = useTienda();
   const stockInfo = estadoStock(producto.stock);
 
+  // El MS Carrito valida el stock: si no alcanza, responde 409 y se muestra "Stock insuficiente."
   function manejarAgregar() {
-    dispatch({ type: 'AGREGAR_AL_CARRITO', payload: producto.id });
+    agregarAlCarrito(producto.id);
   }
 
   function getPlataformaColor(plataforma) {
@@ -57,7 +58,7 @@ export default function ProductoCard({ producto }) {
             <span className="text-muted ms-1" style={{ fontSize: '0.75rem' }}>Stock: {producto.stock}</span>
           </div>
           
-          <Button className="w-100 btn-corporativo" onClick={manejarAgregar}>
+          <Button className="w-100 btn-corporativo" onClick={manejarAgregar} disabled={producto.stock <= 0}>
             Agregar al carrito
           </Button>
         </div>
